@@ -7,9 +7,9 @@ type bop =
   | Equiv
 
 type uop = Not
-type prop = bool
+type value = bool
 
-type expr =
-  | Prop of prop
-  | Binop of bop * expr * expr
-  | Unop of uop * expr
+type prop =
+  | Prop of value
+  | Binop of bop * prop * prop
+  | Unop of uop * prop
