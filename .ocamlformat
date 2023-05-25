@@ -1,7 +1,7 @@
 profile = conventional
 break-fun-decl = fit-or-vertical
 exp-grouping = preserve
-margin = 72
+margin = 90
 parse-docstrings = true
 type-decl=sparse
 wrap-comments = true
