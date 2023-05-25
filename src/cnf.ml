@@ -1,14 +1,4 @@
-(* Start AST *)
-
-type prop =
-  | Atom of string
-  | Or of prop * prop
-  | And of prop * prop
-  | Not of prop
-  | Imp of prop * prop
-  | Iff of prop * prop
-  | True
-  | False
+(* start cnf*)
 
 type literal =
   | Pos of string
@@ -23,15 +13,6 @@ type nnf =
 
 type clause = literal list
 type cnf = clause list
-
-let rec base_of (p : prop) =
-  match p with
-  | Atom _ | True | False -> p
-  | Or (a, b) -> Or (base_of a, base_of b)
-  | And (a, b) -> And (base_of a, base_of b)
-  | Not a -> Not (base_of a)
-  | Imp (a, b) -> Or (Not (base_of a), base_of b)
-  | Iff (a, b) -> base_of (And (Imp (a, b), Imp (b, a)))
 
 let rec nnf_of_prop (p : prop) : nnf =
   match p with
@@ -65,20 +46,22 @@ let rec distributed_nnf (n : nnf) : nnf =
   | N_Or (a, b) -> distribute (distributed_nnf a) (distributed_nnf b)
   | N_And (a, b) -> N_And (distributed_nnf a, distributed_nnf b)
 
-(* let rec cnf_of_nnf (n : nnf) : cnf = match distributed_nnf n with | N_True -> [] |
-   N_False -> [[]] | Lit a -> [[a]] | N_And (a, b) -> cnf_of_nnf a @ cnf_of_nnf b | N_Or
-   (a, b) -> *)
+let rec list_of_ors (n : nnf) =
+  match n with N_And (a, b) -> list_of_ors a @ list_of_ors b | _ -> [ n ]
 
-let rec string_of_prop (p : prop) : string =
-  match p with
-  | Atom a -> a
-  | True -> "true"
-  | False -> "false"
-  | Or (a, b) -> "(" ^ string_of_prop a ^ " V " ^ string_of_prop b ^ ")"
-  | And (a, b) -> "(" ^ string_of_prop a ^ " ^ " ^ string_of_prop b ^ ")"
-  | Not a -> "~" ^ string_of_prop a
-  | Imp (a, b) -> "(" ^ string_of_prop a ^ " => " ^ string_of_prop b ^ ")"
-  | Iff (a, b) -> "(" ^ string_of_prop a ^ " <=> " ^ string_of_prop b ^ ")"
+let rec clause_of_ors (n : nnf) =
+  match n with
+  | Lit a -> [ a ]
+  | N_Or (a, b) -> clause_of_ors a @ clause_of_ors b
+  | _ -> []
+
+let cnf_of_distr (n : nnf) : cnf =
+  match n with
+  | N_True -> []
+  | N_False -> [ [] ]
+  | _ -> list_of_ors n |> List.map clause_of_ors
+
+let cnf_of_prop p = p |> nnf_of_prop |> distributed_nnf |> cnf_of_distr
 
 let rec string_of_nnf (n : nnf) : string =
   match n with
@@ -88,11 +71,3 @@ let rec string_of_nnf (n : nnf) : string =
   | Lit (Neg a) -> "~" ^ a
   | N_And (a, b) -> "(" ^ string_of_nnf a ^ " ^ " ^ string_of_nnf b ^ ")"
   | N_Or (a, b) -> "(" ^ string_of_nnf a ^ " V " ^ string_of_nnf b ^ ")"
-
-let a = Atom "A"
-let b = Atom "B"
-let c = Atom "C"
-let d = Atom "D"
-let a_or_b = Or (a, b)
-let c_and_not_d = And (c, Not d)
-let complicated = Iff (a_or_b, c_and_not_d)
