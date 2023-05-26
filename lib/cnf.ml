@@ -88,7 +88,7 @@ let rec string_of_nnf (n : nnf) : string =
 let string_of_literal l = match l with Pos a -> a | Neg a -> "~" ^ a
 
 let string_of_list_aux converter joiner lst =
-  "(" ^ (lst |> List.map converter |> List.fold_left (fun a b -> a ^ joiner ^ b) "") ^ ")"
+  "(" ^ (lst |> List.map converter |> String.concat joiner) ^ ")"
 
 let string_of_clause = string_of_list_aux string_of_literal " V "
 let string_of_cnf = string_of_list_aux string_of_clause " ^ "
