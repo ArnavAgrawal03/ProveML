@@ -29,5 +29,5 @@ let prop_tests =
   ]
 
 let cnf_tests = []
-let suite = "Test suite for Pac-Man" >::: List.flatten [ prop_tests; cnf_tests ]
+let suite = "Test suite for ProveML" >::: List.flatten [ prop_tests; cnf_tests ]
 let _ = run_test_tt_main suite
