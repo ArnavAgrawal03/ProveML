@@ -1,3 +1,5 @@
+open Prop
+
 (* start cnf*)
 
 type literal =

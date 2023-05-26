@@ -29,11 +29,3 @@ let rec string_of_prop (p : prop) : string =
   | Not a -> "~" ^ string_of_prop a
   | Imp (a, b) -> "(" ^ string_of_prop a ^ " => " ^ string_of_prop b ^ ")"
   | Iff (a, b) -> "(" ^ string_of_prop a ^ " <=> " ^ string_of_prop b ^ ")"
-
-let a = Atom "A"
-let b = Atom "B"
-let c = Atom "C"
-let d = Atom "D"
-let a_or_b = Or (a, b)
-let c_and_not_d = And (c, Not d)
-let complicated = Iff (a_or_b, c_and_not_d)
