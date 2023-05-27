@@ -1,5 +1,6 @@
 open Prover.Prop
 open Prover.Cnf
+open Prover.Resolution
 open OUnit2
 
 let string_of_prop_test (name : string) (p : prop) (expected : string) =
@@ -14,6 +15,10 @@ let nnf_of_prop_test (name : string) (p : prop) (expected : nnf) =
 
 let cnf_of_prop_test (name : string) (p : prop) (expected : cnf) =
   "Testing Cnf.cnf_of_prop: " ^ name >:: fun _ -> assert_equal expected (cnf_of_prop p)
+
+let resolution_test (name : string) (kb : prop) (alpha : prop) (expected : bool option) =
+  "Testing Resolution.resolution: " ^ name >:: fun _ ->
+  assert_equal expected (resolution kb alpha)
 
 let a = Atom "A"
 let b = Atom "B"
@@ -68,5 +73,17 @@ let cnf_tests =
     cnf_of_prop_test "Multiple Ors" b_or_c_or_not_d cnf_b_or_c_or_not_d;
   ]
 
-let suite = "Test suite for ProveML" >::: List.flatten [ prop_tests; cnf_tests ]
-let _ = run_test_tt_main suite
+let get_resolution_result p1 p2 =
+  match resolution p1 p2 with
+  | Some true -> print_string "True!"
+  | Some false -> print_string "False!"
+  | None -> print_string "None!"
+
+let resolution_tests = [ resolution_test "Simple" a a (Some true) ]
+
+let suite =
+  "Test suite for ProveML" >::: List.flatten [ prop_tests; cnf_tests; resolution_tests ]
+
+let _ =
+  get_resolution_result a a;
+  run_test_tt_main suite

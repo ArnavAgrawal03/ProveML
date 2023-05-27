@@ -10,6 +10,12 @@ type prop =
   | True
   | False
 
+let ( => ) a b = Imp (a, b)
+let ( <=> ) a b = Iff (a, b)
+let ( &&& ) a b = And (a, b)
+let ( || ) a b = Or (a, b)
+let ( ~~ ) a = Not a
+
 let rec base_of (p : prop) =
   match p with
   | Atom _ | True | False -> p
