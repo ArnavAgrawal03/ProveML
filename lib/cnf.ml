@@ -5,15 +5,41 @@ type literal =
   | Pos of string
   | Neg of string
 
+let compare_literals (a : literal) (b : literal) =
+  match (a, b) with
+  | Pos a, Pos b -> compare a b
+  | Neg a, Neg b -> compare a b
+  | Pos _, Neg _ -> -1
+  | Neg _, Pos _ -> 1
+
+module OrderedLiteral = struct
+  type t = literal
+
+  let compare = compare_literals
+end
+
+module LiteralSet = Set.Make (OrderedLiteral)
+
+type clause = LiteralSet.t
+
+let compare_clauses = LiteralSet.compare
+
+module OrderedClause = struct
+  type t = clause
+
+  let compare = compare_clauses
+end
+
+module ClauseSet = Set.Make (OrderedClause)
+
+type cnf = ClauseSet.t
+
 type nnf =
   | N_True
   | N_False
   | Lit of literal
   | N_And of nnf * nnf
   | N_Or of nnf * nnf
-
-type clause = literal list
-type cnf = clause list
 
 let rec nnf_of_prop (p : prop) : nnf =
   match p with
@@ -50,28 +76,22 @@ let rec distributed_nnf (n : nnf) : nnf =
   | N_Or (a, b) -> distribute (distributed_nnf a) (distributed_nnf b)
   | N_And (a, b) -> N_And (distributed_nnf a, distributed_nnf b)
 
-(** Given a set of nested ands, [n], [list_of_ands n] flattens [n] to a list of nnfs as a
-    disjunction. Helper function to convert from nnf to cnf. Requires: [n] is already
-    distributed in terms of [Or]. The resulting value does not contain any [And]
-    constructors*)
-let rec list_of_ands (n : nnf) =
-  match n with N_And (a, b) -> list_of_ands a @ list_of_ands b | _ -> [ n ]
-
 (** Given a set of nested ors, [n], [clause_of_ors n] flatten [n] to a list of literals as
     a conjunction. Requires: [n] doesn't contain any ands. *)
 let rec clause_of_ors (n : nnf) =
   match n with
-  | Lit a -> [ a ]
-  | N_Or (a, b) -> clause_of_ors a @ clause_of_ors b
-  | _ -> []
+  | Lit a -> LiteralSet.singleton a
+  | N_Or (a, b) -> LiteralSet.union (clause_of_ors a) (clause_of_ors b)
+  | _ -> LiteralSet.empty
 
 (** [cnf_of_distr n] is the cnf version of [n]. Requires: nnf already has distrubuted
     form.*)
-let cnf_of_distr (n : nnf) : cnf =
+let rec cnf_of_distr (n : nnf) : cnf =
   match n with
-  | N_True -> []
-  | N_False -> [ [] ]
-  | _ -> list_of_ands n |> List.map clause_of_ors
+  | N_True -> ClauseSet.empty
+  | N_False -> ClauseSet.singleton LiteralSet.empty
+  | N_And (a, b) -> ClauseSet.union (cnf_of_distr a) (cnf_of_distr b)
+  | _ -> ClauseSet.singleton (clause_of_ors n)
 
 let cnf_of_prop p = p |> nnf_of_prop |> distributed_nnf |> cnf_of_distr
 
@@ -89,5 +109,11 @@ let string_of_literal l = match l with Pos a -> a | Neg a -> "~" ^ a
 let string_of_list_aux converter joiner lst =
   "(" ^ (lst |> List.map converter |> String.concat joiner) ^ ")"
 
-let string_of_clause = string_of_list_aux string_of_literal " V "
-let string_of_cnf = string_of_list_aux string_of_clause " ^ "
+let list_of_clause = LiteralSet.elements
+let list_of_cnf (c : cnf) = ClauseSet.elements c |> List.map list_of_clause
+
+let string_of_clause (c : clause) =
+  string_of_list_aux string_of_literal " V " (LiteralSet.elements c)
+
+let string_of_cnf (c : cnf) =
+  string_of_list_aux string_of_clause " ^ " (ClauseSet.elements c)

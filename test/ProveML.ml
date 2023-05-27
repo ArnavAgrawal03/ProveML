@@ -36,7 +36,9 @@ let d_neg = Neg "D"
 let nnf_not_a_and_not_b = N_And (Lit a_neg, Lit b_neg)
 let nnf_not_c_or_d = N_Or (Lit c_neg, Lit d_pos)
 let b_or_c_or_not_d = Or (Or (b, c), Not d)
-let cnf_b_or_c_or_not_d = [ [ b_pos; c_pos; d_neg ] ]
+
+let cnf_b_or_c_or_not_d =
+  ClauseSet.singleton ([ b_pos; c_pos; d_neg ] |> LiteralSet.of_list)
 
 let prop_tests =
   [
@@ -62,7 +64,7 @@ let cnf_tests =
     nnf_of_prop_test "DeMorgan's on Or" (Not a_or_b) nnf_not_a_and_not_b;
     nnf_of_prop_test "DeMorgan's on And" (Not c_and_not_d) nnf_not_c_or_d;
     (*cnf of prop tests*)
-    cnf_of_prop_test "Atom" b [ [ b_pos ] ];
+    cnf_of_prop_test "Atom" b (ClauseSet.singleton (LiteralSet.singleton b_pos));
     cnf_of_prop_test "Multiple Ors" b_or_c_or_not_d cnf_b_or_c_or_not_d;
   ]
 
