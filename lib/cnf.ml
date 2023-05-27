@@ -1,5 +1,4 @@
 open Prop
-
 (*helper/shielded functions specified here. All others sepcified in the interface file*)
 
 type literal =
