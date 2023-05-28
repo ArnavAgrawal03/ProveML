@@ -26,7 +26,7 @@ let resolution_test
     (kb : prop)
     (alpha : prop)
     (print_proof : bool)
-    (expected : bool option) =
+    (expected : bool) =
   "Testing Resolution.resolution: " ^ name >:: fun _ ->
   assert_equal expected (resolution kb alpha print_proof)
 
@@ -62,6 +62,22 @@ let comp_cnf = ClauseSet.of_list [ comp_c1; comp_c2; comp_c3; comp_c4; comp_c5 ]
 
 let cnf_b_or_c_or_not_d =
   ClauseSet.singleton ([ b_pos; c_pos; d_neg ] |> LiteralSet.of_list)
+
+(*Given the following hypotheses:
+
+  If it rains, Joe brings his umbrella (r -> u) If Joe has an umbrella, he doesn't get wet
+  (u -> NOT w) If it doesn't rain, Joe doesn't get wet (NOT r -> NOT w)
+
+  prove that Joes doesn't get wet (NOT w)*)
+
+let it_rains = Atom "r"
+let joe_bring_umbrella = Atom "u"
+let joe_get_wet = Atom "w"
+let prop1 = Imp (it_rains, joe_bring_umbrella)
+let prop2 = Imp (joe_bring_umbrella, Not joe_get_wet)
+let prop3 = Imp (Not it_rains, Not joe_get_wet)
+let kb = And (And (prop1, prop2), prop3)
+let alpha = Not joe_get_wet
 
 let prop_tests =
   [
@@ -109,16 +125,18 @@ let resolution_tests =
     resolve_test "Simple" (LiteralSet.singleton a_pos) (LiteralSet.singleton a_neg)
       (ClauseSet.singleton LiteralSet.empty);
     (* resolution tests*)
-    resolution_test "Simple" a a false (Some true);
-    resolution_test "And" c_and_not_d c false (Some true);
-    resolution_test "And2" c_and_not_d (Not d) false (Some true);
-    resolution_test "And3" c_and_not_d (Not c) false (Some false);
-    resolution_test "Simple resolution" (a_or_b &&& not_a_or_b) b false (Some true);
-    resolution_test "Implication" (a_implies_b &&& a) b false (Some true);
-    resolution_test "Iff" (a <=> b &&& b) a false (Some true);
-    resolution_test "Iff2" (And (a, a <=> b)) b false (Some true);
-    resolution_test "Iff3" (And (a, a <=> b)) (Not b) false (Some false);
-    resolution_test "Iff4" (And (a, a <=> b)) (a &&& b) false (Some true);
+    resolution_test "Simple" a a false true;
+    resolution_test "And" c_and_not_d c false true;
+    resolution_test "And2" c_and_not_d (Not d) false true;
+    resolution_test "And3" c_and_not_d (Not c) false false;
+    resolution_test "Simple resolution" (a_or_b &&& not_a_or_b) b false true;
+    resolution_test "Implication" (a_implies_b &&& a) b false true;
+    resolution_test "Iff" (a <=> b &&& b) a false true;
+    resolution_test "Iff2" (And (a, a <=> b)) b false true;
+    resolution_test "Iff3" (And (a, a <=> b)) (Not b) false false;
+    resolution_test "Iff4" (And (a, a <=> b)) (a &&& b) false true;
+    resolution_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false false;
+    resolution_test "Example online" kb alpha false true;
   ]
 
 let suite =
