@@ -21,9 +21,14 @@ let resolve_test (name : string) (c1 : clause) (c2 : clause) (expected : cnf) =
   "Testing Resolution.resolve: " ^ name >:: fun _ ->
   assert_equal (ClauseSet.compare expected (resolve c1 c2)) 0
 
-let resolution_test (name : string) (kb : prop) (alpha : prop) (expected : bool option) =
+let resolution_test
+    (name : string)
+    (kb : prop)
+    (alpha : prop)
+    (print_proof : bool)
+    (expected : bool option) =
   "Testing Resolution.resolution: " ^ name >:: fun _ ->
-  assert_equal expected (resolution kb alpha)
+  assert_equal expected (resolution kb alpha print_proof)
 
 let a = Atom "A"
 let b = Atom "B"
@@ -104,7 +109,16 @@ let resolution_tests =
     resolve_test "Simple" (LiteralSet.singleton a_pos) (LiteralSet.singleton a_neg)
       (ClauseSet.singleton LiteralSet.empty);
     (* resolution tests*)
-    resolution_test "Simple" a a (Some true);
+    resolution_test "Simple" a a false (Some true);
+    resolution_test "And" c_and_not_d c false (Some true);
+    resolution_test "And2" c_and_not_d (Not d) false (Some true);
+    resolution_test "And3" c_and_not_d (Not c) false (Some false);
+    resolution_test "Simple resolution" (a_or_b &&& not_a_or_b) b false (Some true);
+    resolution_test "Implication" (a_implies_b &&& a) b false (Some true);
+    resolution_test "Iff" (a <=> b &&& b) a false (Some true);
+    resolution_test "Iff2" (And (a, a <=> b)) b false (Some true);
+    resolution_test "Iff3" (And (a, a <=> b)) (Not b) false (Some false);
+    resolution_test "Iff4" (And (a, a <=> b)) (a &&& b) false (Some true);
   ]
 
 let suite =
