@@ -1,3 +1,4 @@
 (library
  (name prover)
- (public_name ProveML))
+ (public_name ProveML)
+ (libraries Stdlib))
