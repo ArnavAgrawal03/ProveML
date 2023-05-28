@@ -50,5 +50,8 @@ val list_of_cnf : cnf -> literal list list
 val string_of_nnf : nnf -> string
 (** [string_of_nnf n] is the string representing [n]*)
 
+val string_of_clause : clause -> string
+(** [string_of_clause c] is the string representing [c]*)
+
 val string_of_cnf : cnf -> string
 (** [string_of_cnf c] is the string representing [c]*)

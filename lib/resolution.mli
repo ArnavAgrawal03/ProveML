@@ -1,4 +1,9 @@
 open Prop
+open Cnf
+
+val resolve : clause -> clause -> cnf
+(** [resolve c1 c2] resolves two clauses, returning a set of clauses that are the result
+    of resolving [c1] and [c2] *)
 
 val resolution : prop -> prop -> bool option
 (** [resolution kb alpha] is [Some true] if [alpha] is [true] given [kb]. [Some false] if
