@@ -30,9 +30,9 @@ let resolution_test
   "Testing Resolution.resolution: " ^ name >:: fun _ ->
   assert_equal expected (resolution kb alpha print_proof)
 
-(* let resolution2_test (name : string) (kb : prop) (alpha : prop) (expected : bool) =
-   "Testing Resolution.resolution: " ^ name >:: fun _ -> assert_equal expected
-   (resolution2 kb alpha) *)
+let resolution2_test (name : string) (kb : prop) (alpha : prop) (expected : bool) =
+  "Testing Resolution.resolution: " ^ name >:: fun _ ->
+  assert_equal expected (resolution2 kb alpha)
 
 let a = Atom "A"
 let b = Atom "B"
@@ -141,9 +141,20 @@ let resolution_tests =
     resolution_test "Iff4" (And (a, a <=> b)) (a &&& b) false true;
     resolution_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false false;
     resolution_test "Example online" kb alpha false true;
-    resolution_test "Simple c" c c false true
+    resolution_test "Simple c" c c false true;
     (* resolution2 tests*)
-    (* resolution2_test "Simple" a a true; *);
+    resolution2_test "Simple" a a true;
+    resolution2_test "And" c_and_not_d c true;
+    resolution2_test "And2" c_and_not_d (Not d) true;
+    resolution2_test "And3" c_and_not_d (Not c) false;
+    resolution2_test "Simple resolution" (a_or_b &&& not_a_or_b) b true;
+    resolution2_test "Implication" (a_implies_b &&& a) b true;
+    resolution2_test "Iff" (a <=> b &&& b) a true;
+    resolution2_test "Iff2" (And (a, a <=> b)) b true;
+    resolution2_test "Iff3" (And (a, a <=> b)) (Not b) false;
+    resolution2_test "Iff4" (And (a, a <=> b)) (a &&& b) true;
+    resolution2_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false;
+    resolution2_test "Example online" kb alpha true;
   ]
 
 let suite =
