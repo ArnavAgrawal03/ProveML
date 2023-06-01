@@ -6,7 +6,10 @@ val resolve : clause -> clause -> cnf
     of resolving [c1] and [c2] *)
 
 val resolution : prop -> prop -> bool -> bool
-(** [resolution kb alpha print_proof] is [Some true] if [alpha] is [true] given [kb].
-    [Some false] if [alpha] is [false] given [kb]. [None] handles the case where we're
-    unsure (shouldn't occur). Prints out the proof if print_proof is true. Doesn't
-    otherwise. *)
+(** [resolution kb alpha print_proof] is [true] if [alpha] is [true] given [kb]. [false]
+    if [alpha] is [false] given [kb]. Prints out the steps of the proof if [print_proof]
+    is [true]. Doesn't otherwise. *)
+
+val resolution2 : prop -> prop -> bool
+(** [resolution2 kb alpha] is [true] if [alpha] is [true] given [kb]. [false] if [alpha]
+    is [false] given [kb]. *)

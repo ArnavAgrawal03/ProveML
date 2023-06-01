@@ -4,6 +4,30 @@ open Cnf
 (** [negate_literal l] is Pos a if l is Neg a and vice-versa *)
 let negate_literal = function Neg a -> Pos a | Pos a -> Neg a
 
+(** [ClausePair] is a module for passing to [Set.Make] to make a set of pairs of clauses.
+    This is used for generating a cartesian product of two sets of clauses.*)
+module ClausePair = struct
+  type t = clause * clause
+
+  let compare (clause_a1, clause_a2) (clause_b1, clause_b2) =
+    match LiteralSet.compare clause_a1 clause_b1 with
+    | 0 -> LiteralSet.compare clause_a2 clause_b2
+    | x -> x
+end
+
+module ClausePairSet = Set.Make (ClausePair)
+(** A set of pairs of clauses*)
+
+(** [add_single c cs] is a set of pair of clauses with pairs [(c, d)] where [d] is in [cs]*)
+let add_single clause clauses =
+  (ClauseSet.fold (fun x -> ClausePairSet.add (x, clause)) clauses) ClausePairSet.empty
+
+(** [product cs1 cs2] is the cartesian product of [cs1] and [cs2] *)
+let product (clauses1 : ClauseSet.t) (clauses2 : ClauseSet.t) =
+  ClauseSet.fold
+    (fun clause -> ClausePairSet.union (add_single clause clauses2))
+    clauses1 ClausePairSet.empty
+
 (** [resolve c1 c2] resolves two clauses, returning a set of clauses that are the result
     of resolving [c1] and [c2] *)
 let resolve (c1 : clause) (c2 : clause) =
@@ -104,3 +128,23 @@ let resolution (kb : prop) (alpha : prop) (print_proof : bool) =
         else loop updated_clauses
   in
   loop clauses
+
+exception Done of bool
+
+let resolution2_aux kb alpha =
+  let og_clauses = And (kb, alpha) |> cnf_of_prop in
+  let new_clauses = ref ClauseSet.empty in
+  let rec loop clauses =
+    let pairs = product clauses clauses in
+    ClausePairSet.iter
+      (fun (c_i, c_j) ->
+        let resolvents = resolve c_i c_j in
+        if ClauseSet.mem LiteralSet.empty resolvents then raise (Done true)
+        else new_clauses := ClauseSet.union !new_clauses resolvents)
+      pairs;
+    if ClauseSet.subset !new_clauses clauses then raise (Done false)
+    else loop (ClauseSet.union clauses !new_clauses)
+  in
+  loop og_clauses
+
+let resolution2 kb alpha = try resolution2_aux kb alpha with Done b -> b
