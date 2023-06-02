@@ -17,7 +17,8 @@ prover:
 	OCAMLRUNPARAM=b dune exec bin/main.exe
 
 test:
-	OCAMLRUNPARAM=b dune exec test/main.exe
+	dune build
+	OCAMLRUNPARAM=b dune exec _build/default/test/ProveML.exe
 
 opendoc: doc
 	@bash opendoc.sh
