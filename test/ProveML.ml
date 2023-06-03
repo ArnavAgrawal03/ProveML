@@ -30,10 +30,6 @@ let resolution_test
   "Testing Resolution.resolution: " ^ name >:: fun _ ->
   assert_equal expected (resolution kb alpha print_proof)
 
-let resolution2_test (name : string) (kb : prop) (alpha : prop) (expected : bool) =
-  "Testing Resolution.resolution: " ^ name >:: fun _ ->
-  assert_equal expected (resolution2 kb alpha)
-
 let a = Atom "A"
 let b = Atom "B"
 let c = Atom "C"
@@ -112,17 +108,6 @@ let cnf_tests =
     cnf_of_prop_test "Complicated Iff" complicated comp_cnf;
   ]
 
-(* let get_cnf_of_prop_result p expected= print_endline (string_of_prop p); print_endline
-   (p |> cnf_of_prop |> string_of_cnf); print_endline (expected |> string_of_cnf) *)
-
-(* let string_of_bool_opt = function | Some true -> "True" | Some false -> "False" | None
-   -> "None"
-
-   let get_resolution_result c1 c2 expected = print_endline (string_of_prop c1);
-   print_endline (string_of_prop c2); print_endline ("Got: " ^ (resolution c1 c2 |>
-   string_of_bool_opt)); print_endline ("Expected: " ^ (expected |>
-   string_of_bool_opt)) *)
-
 let resolution_tests =
   [
     (* resolve tests*)
@@ -142,19 +127,6 @@ let resolution_tests =
     resolution_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false false;
     resolution_test "Example online" kb alpha false true;
     resolution_test "Simple c" c c false true;
-    (* resolution2 tests*)
-    resolution2_test "Simple" a a true;
-    resolution2_test "And" c_and_not_d c true;
-    resolution2_test "And2" c_and_not_d (Not d) true;
-    resolution2_test "And3" c_and_not_d (Not c) false;
-    resolution2_test "Simple resolution" (a_or_b &&& not_a_or_b) b true;
-    resolution2_test "Implication" (a_implies_b &&& a) b true;
-    resolution2_test "Iff" (a <=> b &&& b) a true;
-    resolution2_test "Iff2" (And (a, a <=> b)) b true;
-    resolution2_test "Iff3" (And (a, a <=> b)) (Not b) false;
-    resolution2_test "Iff4" (And (a, a <=> b)) (a &&& b) true;
-    resolution2_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false;
-    resolution2_test "Example online" kb alpha true;
   ]
 
 let suite =

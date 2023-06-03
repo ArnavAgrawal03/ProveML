@@ -25,6 +25,11 @@ let print_resolving print_proof clause1 clause2 =
 let print_resolved print_proof new_clauses =
   if print_proof then print_endline ("Resulting clauses: " ^ string_of_cnf new_clauses)
 
+let print_resol1 print_proof c_i c_j new_clauses =
+  if ClauseSet.cardinal new_clauses > 0 then (
+    print_resolving print_proof c_i c_j;
+    print_resolved print_proof new_clauses)
+
 let print_resolvents print_proof resolvents =
   if print_proof then print_endline ("Resolvents: " ^ string_of_cnf resolvents)
 
@@ -34,10 +39,9 @@ let print_contradiction print_proof =
       "Found empty clause. Reached Contradiction. The assumption is false. So, the \
        original statement is true. QED."
 
-let print_continue print_proof updated_clauses =
-  if print_proof then (
-    print_endline "Did not find empty clause, so haven't reach a contradiction yet.";
-    print_endline ("Updated set of clauses: " ^ string_of_cnf updated_clauses))
+let print_continue print_proof =
+  if print_proof then
+    print_endline "Did not find empty clause, so haven't reach a contradiction yet."
 
 let print_no_progress print_proof =
   if print_proof then (

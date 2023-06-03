@@ -45,63 +45,31 @@ let resolve (c1 : clause) (c2 : clause) =
       else acc)
     c1 ClauseSet.empty
 
-(** [resolution kb alpha] is [Some true] if [alpha] is [true] given [kb]. [Some false] if
-    [alpha] is [false] given [kb]. [None] handles the case where we're unsure (shouldn't
-    occur)*)
-let resolution (kb : prop) (alpha : prop) (print_proof : bool) =
-  (* let og_clauses = And (kb, Not alpha) |> cnf_of_prop in *)
-  let clauses = And (kb, Not alpha) |> cnf_of_prop in
-  print_proof_start print_proof kb alpha clauses;
-  let rec loop clauses =
-    print_loop1 print_proof clauses;
-    if ClauseSet.is_empty clauses then (
-      print_loop_empty print_proof;
-      false)
-    else
-      let clause1 = ClauseSet.choose clauses in
-      let rest_clauses = ClauseSet.remove clause1 clauses in
-      let resolvents =
-        ClauseSet.fold
-          (fun clause2 acc ->
-            print_resolving print_proof clause1 clause2;
-            let new_clauses = resolve clause1 clause2 in
-            print_resolved print_proof new_clauses;
-            ClauseSet.union new_clauses acc)
-          rest_clauses ClauseSet.empty
-      in
-      print_resolvents print_proof resolvents;
-      if ClauseSet.mem LiteralSet.empty resolvents then (
-        print_contradiction print_proof;
-        true)
-      else
-        let updated_clauses =
-          ClauseSet.union rest_clauses (ClauseSet.remove clause1 resolvents)
-        in
-        print_continue print_proof updated_clauses;
-        (* if ClauseSet.subset resolvents og_clauses then Some false else *)
-        if ClauseSet.equal updated_clauses clauses then (
-          print_no_progress print_proof;
-          false)
-        else loop updated_clauses
-  in
-  loop clauses
-
 exception Done of bool
 
-let resolution2_aux kb alpha =
-  let og_clauses = And (kb, Not alpha) |> cnf_of_prop in
+let resolution2_aux kb alpha print_proof =
+  let og_clauses = cnf_of_prop (kb &&& ~~alpha) in
+  print_proof_start print_proof kb alpha og_clauses;
   let new_clauses = ref ClauseSet.empty in
   let rec loop clauses =
+    print_loop1 print_proof clauses;
     let pairs = product clauses clauses in
     ClausePairSet.iter
       (fun (c_i, c_j) ->
         let resolvents = resolve c_i c_j in
-        if ClauseSet.mem LiteralSet.empty resolvents then raise (Done true)
+        print_resol1 print_proof c_i c_j resolvents;
+        if ClauseSet.mem LiteralSet.empty resolvents then (
+          print_contradiction print_proof;
+          raise (Done true))
         else new_clauses := ClauseSet.union !new_clauses resolvents)
       pairs;
-    if ClauseSet.subset !new_clauses clauses then raise (Done false)
-    else loop (ClauseSet.union clauses !new_clauses)
+    if ClauseSet.subset !new_clauses clauses then (
+      print_no_progress print_proof;
+      raise (Done false))
+    else (
+      print_continue print_proof;
+      loop (ClauseSet.union clauses !new_clauses))
   in
   loop og_clauses
 
-let resolution2 kb alpha = try resolution2_aux kb alpha with Done b -> b
+let resolution kb alpha p_p = try resolution2_aux kb alpha p_p with Done b -> b
