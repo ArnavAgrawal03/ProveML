@@ -8,8 +8,7 @@ type prop =
   | Not of prop
   | Imp of prop * prop
   | Iff of prop * prop
-  | True
-  | False
+(* | True | False *)
 
 (*-------- Infix operators for constructing -------*)
 val ( => ) : prop -> prop -> prop

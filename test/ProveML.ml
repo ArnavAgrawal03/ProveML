@@ -73,10 +73,10 @@ let cnf_b_or_c_or_not_d =
 let it_rains = Atom "r"
 let joe_bring_umbrella = Atom "u"
 let joe_get_wet = Atom "w"
-let prop1 = Imp (it_rains, joe_bring_umbrella)
-let prop2 = Imp (joe_bring_umbrella, Not joe_get_wet)
-let prop3 = Imp (Not it_rains, Not joe_get_wet)
-let kb = And (And (prop1, prop2), prop3)
+let prop1 = it_rains => joe_bring_umbrella
+let prop2 = joe_bring_umbrella => Not joe_get_wet
+let prop3 = Not it_rains => Not joe_get_wet
+let kb = prop1 &&& prop2 &&& prop3
 let alpha = Not joe_get_wet
 
 let prop_tests =
@@ -125,7 +125,7 @@ let resolution_tests =
     resolution_test "Iff3" (And (a, a <=> b)) (Not b) false false;
     resolution_test "Iff4" (And (a, a <=> b)) (a &&& b) false true;
     resolution_test "Iff5" (And (a, a <=> b)) (a &&& Not b) false false;
-    resolution_test "Example online" kb alpha false true;
+    resolution_test "Rushil Choudhary" kb alpha false true;
     resolution_test "Simple c" c c false true;
   ]
 

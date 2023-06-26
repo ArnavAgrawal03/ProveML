@@ -11,7 +11,7 @@ doc:
 
 count:
 	dune clean
-	cloc --by-file --include-lang=OCaml ..
+	cloc --by-file --include-lang=OCaml .
 
 prover:
 	OCAMLRUNPARAM=b dune exec bin/main.exe

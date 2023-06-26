@@ -22,12 +22,10 @@ module LiteralSet = Set.Make (OrderedLiteral)
 
 type clause = LiteralSet.t
 
-let compare_clauses = LiteralSet.compare
-
 module OrderedClause = struct
   type t = clause
 
-  let compare = compare_clauses
+  let compare = LiteralSet.compare
 end
 
 module ClauseSet = Set.Make (OrderedClause)
@@ -35,18 +33,12 @@ module ClauseSet = Set.Make (OrderedClause)
 type cnf = ClauseSet.t
 
 type nnf =
-  | N_True
-  | N_False
   | Lit of literal
   | N_And of nnf * nnf
   | N_Or of nnf * nnf
 
 let rec nnf_of_prop (p : prop) : nnf =
   match p with
-  | True -> N_True
-  | Not True -> N_False
-  | False -> N_False
-  | Not False -> N_True
   | Atom a -> Lit (Pos a)
   | Not (Atom a) -> Lit (Neg a)
   | Not (Not a) -> nnf_of_prop a
@@ -70,8 +62,6 @@ let rec distribute (a : nnf) (b : nnf) : nnf =
     nnf matches the precondition for [cnf_of_distr]*)
 let rec distributed_nnf (n : nnf) : nnf =
   match n with
-  | N_True -> N_True
-  | N_False -> N_False
   | Lit a -> Lit a
   | N_Or (a, b) -> distribute (distributed_nnf a) (distributed_nnf b)
   | N_And (a, b) -> N_And (distributed_nnf a, distributed_nnf b)
@@ -88,8 +78,6 @@ let rec clause_of_ors (n : nnf) =
     form.*)
 let rec cnf_of_distr (n : nnf) : cnf =
   match n with
-  | N_True -> ClauseSet.empty
-  | N_False -> ClauseSet.singleton LiteralSet.empty
   | N_And (a, b) -> ClauseSet.union (cnf_of_distr a) (cnf_of_distr b)
   | _ -> ClauseSet.singleton (clause_of_ors n)
 
@@ -97,8 +85,6 @@ let cnf_of_prop p = p |> nnf_of_prop |> distributed_nnf |> cnf_of_distr
 
 let rec string_of_nnf (n : nnf) : string =
   match n with
-  | N_True -> "true"
-  | N_False -> "false"
   | Lit (Pos a) -> a
   | Lit (Neg a) -> "~" ^ a
   | N_And (a, b) -> "(" ^ string_of_nnf a ^ " ^ " ^ string_of_nnf b ^ ")"
