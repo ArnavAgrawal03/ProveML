@@ -20,15 +20,14 @@ type cnf = ClauseSet.t
 
 (** Represents the Negation Normal form of a statement in propositional logic*)
 type nnf =
-  (* | N_True | N_False *)
   | Lit of literal
   | N_And of nnf * nnf
   | N_Or of nnf * nnf
 
-val compare_literals : literal -> literal -> int
-(** [compare_literals a b] compares [a] and [b] for sorting. It uses these rules: 1. Put
-    positive literals first, then negative literals. 2. If two literals share "sign" then
-    order them by string*)
+val compare_literals : literal * literal -> int
+(** [compare_literals (a, b)] compares [a] and [b] for sorting. It uses these rules: 1.
+    Put negative literals first, then positive literals. 2. If two literals share "sign"
+    then order them by string*)
 
 val nnf_of_prop : prop -> nnf
 (** [nnf_of_prop p] is the Negation Normal form of [p]*)

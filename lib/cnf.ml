@@ -5,17 +5,16 @@ type literal =
   | Pos of string
   | Neg of string
 
-let compare_literals (a : literal) (b : literal) =
-  match (a, b) with
+let compare_literals = function
   | Pos a, Pos b -> compare a b
   | Neg a, Neg b -> compare a b
-  | Pos _, Neg _ -> -1
-  | Neg _, Pos _ -> 1
+  | Pos _, Neg _ -> 1
+  | Neg _, Pos _ -> -1
 
 module OrderedLiteral = struct
   type t = literal
 
-  let compare = compare_literals
+  let compare x y = compare_literals (x, y)
 end
 
 module LiteralSet = Set.Make (OrderedLiteral)
