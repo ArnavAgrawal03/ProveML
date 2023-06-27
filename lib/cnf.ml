@@ -36,8 +36,7 @@ type nnf =
   | N_And of nnf * nnf
   | N_Or of nnf * nnf
 
-let rec nnf_of_prop (p : prop) : nnf =
-  match p with
+let rec nnf_of_prop = function
   | Atom a -> Lit (Pos a)
   | Not (Atom a) -> Lit (Neg a)
   | Not (Not a) -> nnf_of_prop a
@@ -51,45 +50,40 @@ let rec nnf_of_prop (p : prop) : nnf =
   | Iff (a, b) -> nnf_of_prop (And (Imp (a, b), Imp (b, a)))
 
 (** [distribute a b] distributes the [Or] operator to both literals of an and operator*)
-let rec distribute (a : nnf) (b : nnf) : nnf =
-  match (a, b) with
-  | N_And (a1, a2), b -> N_And (distribute a1 b, distribute a2 b)
-  | a, N_And (b1, b2) -> N_And (distribute a b1, distribute a b2)
+let rec distribute = function
+  | N_And (a1, a2), b -> N_And (distribute (a1, b), distribute (a2, b))
+  | a, N_And (b1, b2) -> N_And (distribute (a, b1), distribute (a, b2))
   | a, b -> N_Or (a, b)
 
 (** Processes nnf such that [And] constructors are completely on the outside. Resulting
     nnf matches the precondition for [cnf_of_distr]*)
-let rec distributed_nnf (n : nnf) : nnf =
-  match n with
+let rec distributed_nnf = function
   | Lit a -> Lit a
-  | N_Or (a, b) -> distribute (distributed_nnf a) (distributed_nnf b)
+  | N_Or (a, b) -> distribute (distributed_nnf a, distributed_nnf b)
   | N_And (a, b) -> N_And (distributed_nnf a, distributed_nnf b)
 
 (** Given a set of nested ors, [n], [clause_of_ors n] flatten [n] to a list of literals as
     a conjunction. Requires: [n] doesn't contain any ands. *)
-let rec clause_of_ors (n : nnf) =
-  match n with
+let rec clause_of_ors = function
   | Lit a -> LiteralSet.singleton a
   | N_Or (a, b) -> LiteralSet.union (clause_of_ors a) (clause_of_ors b)
   | _ -> LiteralSet.empty
 
 (** [cnf_of_distr n] is the cnf version of [n]. Requires: nnf already has distrubuted
     form.*)
-let rec cnf_of_distr (n : nnf) : cnf =
-  match n with
+let rec cnf_of_distr = function
   | N_And (a, b) -> ClauseSet.union (cnf_of_distr a) (cnf_of_distr b)
-  | _ -> ClauseSet.singleton (clause_of_ors n)
+  | n -> ClauseSet.singleton (clause_of_ors n)
 
 let cnf_of_prop p = p |> nnf_of_prop |> distributed_nnf |> cnf_of_distr
 
-let rec string_of_nnf (n : nnf) : string =
-  match n with
+let rec string_of_nnf = function
   | Lit (Pos a) -> a
   | Lit (Neg a) -> "~" ^ a
   | N_And (a, b) -> "(" ^ string_of_nnf a ^ " ^ " ^ string_of_nnf b ^ ")"
   | N_Or (a, b) -> "(" ^ string_of_nnf a ^ " V " ^ string_of_nnf b ^ ")"
 
-let string_of_literal l = match l with Pos a -> a | Neg a -> "~" ^ a
+let string_of_literal = function Pos a -> a | Neg a -> "~" ^ a
 
 let string_of_list_aux converter joiner lst =
   "(" ^ (lst |> List.map converter |> String.concat joiner) ^ ")"
