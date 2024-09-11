@@ -1,8 +1,12 @@
 open Prover.Resolution
-open Prover.Prop
 
-let college_town = Atom "College is left of town"
-let town_bagel = Atom "Town is left\n   of bagel"
-let college_bagel = Atom "College is left of bagel"
-let transitivity = college_town &&& town_bagel => college_bagel
-let _ = resolution (college_town &&& town_bagel &&& transitivity) college_bagel true
+(* open Prover.Prop *)
+open Prover.Parse
+open Yojson.Basic.Util
+
+let parse x = x |> member "proposition" |> prop_of_json
+let kb_json = Yojson.Basic.from_file "knowledge.json"
+let query_json = Yojson.Basic.from_file "query.json"
+let kb = parse kb_json
+let query = parse query_json
+let _ = resolution kb query true

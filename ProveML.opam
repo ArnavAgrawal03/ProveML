@@ -3,15 +3,16 @@ opam-version: "2.0"
 synopsis: "A short synopsis"
 description: "A longer description"
 maintainer: ["Maintainer Name"]
-authors: ["Author Name"]
+authors: ["Arnav Agrawal"]
 license: "LICENSE"
 tags: ["topics" "to describe" "your" "project"]
-homepage: "https://github.com/username/reponame"
+homepage: "https://github.com/ArnavAgrawal03/ProveML"
 doc: "https://url/to/documentation"
-bug-reports: "https://github.com/username/reponame/issues"
+bug-reports: "https://github.com/ArnavAgrawal03/ProveML/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.7"}
+  "yojson"
   "odoc" {with-doc}
 ]
 build: [
@@ -28,4 +29,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/username/reponame.git"
+dev-repo: "git+https://github.com/ArnavAgrawal03/ProveML.git"

@@ -5,9 +5,9 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github ArnavAgrawal03/ProveML))
 
-(authors "Author Name")
+(authors "Arnav Agrawal")
 
 (maintainers "Maintainer Name")
 
@@ -19,7 +19,7 @@
  (name ProveML)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends ocaml dune yojson)
  (tags
   (topics "to describe" your project)))
 
